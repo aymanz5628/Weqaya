@@ -234,6 +234,17 @@ export default {
     async bootstrap({ strapi }: { strapi: Core.Strapi }) {
         console.log('🚀 Starting Weqaya Bootstrap (Content Update)...');
 
+        // ONE-TIME ADMIN RESET FOR RENDER DEPLOYMENT
+        if (process.env.RESET_ADMIN === 'true') {
+            console.log('🔄 Resetting admin users for fresh registration...');
+            try {
+                await strapi.db.query('admin::user').deleteMany({});
+                console.log('✅ Admin users cleared. You can now register a new admin.');
+            } catch (err) {
+                console.error('Failed to reset admin users:', err);
+            }
+        }
+
         try {
             await setPublicPermissions(strapi);
 
