@@ -1,0 +1,138 @@
+.section {
+    padding: 80px 0;
+    background-color: var(--charcoal);
+    /* CHANGED: Match Footer Background */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 250px);
+    gap: 16px;
+}
+
+.item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    background-color: #333;
+    /* Darker placeholder for dark theme */
+}
+
+.image {
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.item:hover .image {
+    transform: scale(1.05);
+}
+
+/* Center Item - The "Cool Shape" */
+.centerItem {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Cool Shape: A rotated square with rounded corners (Squircle-ish) or just a circle */
+    /* Let's do a distinct shape using border-radius manipulation or clip-path */
+    position: relative;
+    background: transparent;
+    pointer-events: none;
+    /* The actual clickable part will be the button inside */
+}
+
+/* The actual clickable shape */
+.galleryButton {
+    width: 180px;
+    height: 180px;
+    background-color: var(--gold);
+    /* Use accent color to stand out against dark bg */
+    color: var(--charcoal);
+    /* Dark text on gold button */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    pointer-events: auto;
+
+    /* The "Cool Shape" - Complex Border Radius */
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+    animation: blob 10s infinite alternate;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.galleryButton:hover {
+    transform: scale(1.1) rotate(5deg);
+    background-color: #fff;
+    /* White on hover */
+    color: var(--charcoal);
+    box-shadow: 0 20px 40px -10px rgba(255, 255, 255, 0.2);
+    border-radius: 58% 42% 30% 70% / 55% 55% 45% 45%;
+}
+
+.iconWrapper {
+    margin-bottom: 8px;
+}
+
+.buttonText {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+@keyframes blob {
+    0% {
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+    }
+
+    33% {
+        border-radius: 70% 30% 30% 70% / 60% 40% 60% 40%;
+    }
+
+    66% {
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    }
+
+    100% {
+        border-radius: 58% 42% 42% 58% / 42% 58% 42% 58%;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, 200px);
+        /* Adjust rows */
+    }
+
+    .centerItem {
+        grid-column: 1 / -1;
+        /* Span full width */
+        grid-row: 3;
+        /* Move to middle/bottom */
+        background: transparent;
+    }
+
+    .galleryButton {
+        width: 100%;
+        height: 100%;
+        max-height: 180px;
+        border-radius: 24px !important;
+        /* Reset complicated shape on mobile for better fit */
+        animation: none;
+    }
+}

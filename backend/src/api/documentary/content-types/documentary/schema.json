@@ -1,0 +1,59 @@
+{
+    "kind": "collectionType",
+    "collectionName": "documentaries",
+    "info": {
+        "singularName": "documentary",
+        "pluralName": "documentaries",
+        "displayName": "Documentary",
+        "description": "Documentary films"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "pluginOptions": {},
+    "attributes": {
+        "title": {
+            "type": "string",
+            "required": true
+        },
+        "description": {
+            "type": "text",
+            "required": true
+        },
+        "content": {
+            "type": "customField",
+            "customField": "plugin::tinymce.tinymce"
+        },
+        "slug": {
+            "type": "uid",
+            "targetField": "title",
+            "required": true
+        },
+        "image": {
+            "type": "media",
+            "multiple": false,
+            "required": false,
+            "allowedTypes": [
+                "images",
+                "files",
+                "videos",
+                "audios"
+            ]
+        },
+        "videoUrl": {
+             "type": "string"
+        },
+        "seoTitle": {
+            "type": "string"
+        },
+        "seoDescription": {
+            "type": "text"
+        },
+        "keywords": {
+            "type": "text"
+        },
+        "canonicalUrl": {
+            "type": "string"
+        }
+    }
+}

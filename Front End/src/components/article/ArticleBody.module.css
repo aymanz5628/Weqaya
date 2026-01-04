@@ -1,0 +1,33 @@
+.body {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 0 64px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.body p {
+  margin-bottom: 24px;
+}
+
+.body h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-top: 40px;
+  margin-bottom: 24px;
+}
+
+.imageWrapper {
+  margin: 40px 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.image {
+  object-fit: cover;
+}

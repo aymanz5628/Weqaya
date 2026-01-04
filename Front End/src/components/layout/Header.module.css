@@ -1,0 +1,285 @@
+/* Premium Header */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: var(--header-height);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.container {
+    height: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+    font-size: 30px;
+    /* Increased from 26px */
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+}
+
+.logo span {
+    background: linear-gradient(135deg, var(--gold), var(--coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Desktop Navigation */
+.nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+}
+
+.navLink {
+    position: relative;
+    font-size: 18px;
+    /* Increased from 16px */
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: var(--space-2) 0;
+    transition: color 150ms ease;
+}
+
+.navLink::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--coral));
+    border-radius: 1px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 300ms ease;
+}
+
+.navLink:hover {
+    color: var(--text-primary);
+}
+
+.navLink:hover::after,
+.navLink.active::after {
+    transform: scaleX(1);
+}
+
+.navLink.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Desktop Actions */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.searchForm {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    padding: var(--space-2) 16px;
+    border-radius: var(--radius-full);
+    gap: var(--space-2);
+}
+
+.searchInput {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 16px;
+    /* Increased from 15px */
+    color: var(--text-primary);
+    width: 140px;
+}
+
+.searchInput::placeholder {
+    color: var(--text-tertiary);
+}
+
+.searchBtn {
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: flex;
+    transition: color 150ms ease;
+}
+
+.searchBtn:hover {
+    color: var(--gold);
+}
+
+/* Mobile Menu Button - Hidden Only */
+.mobileMenuBtn {
+    display: none;
+    padding: var(--space-2);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+/* Mobile Overlay */
+.mobileOverlay {
+    display: none;
+    /* Always hidden now */
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 300ms ease;
+}
+
+.mobileOverlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile Menu Drawer */
+.mobileMenu {
+    display: none;
+    /* Always hidden now */
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--snow);
+    z-index: 999;
+    padding: var(--space-8) var(--space-5);
+    transform: translateX(100%);
+    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+}
+
+.mobileMenu.open {
+    transform: translateX(0);
+}
+
+.mobileNav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.mobileNavLink {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--border);
+    transition: all 150ms ease;
+}
+
+.mobileNavLink:hover,
+.mobileNavLink.active {
+    color: var(--gold);
+}
+
+.mobileSearchForm {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    gap: var(--space-3);
+}
+
+.mobileSearchInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+}
+
+.mobileSearchInput::placeholder {
+    color: var(--text-tertiary);
+}
+
+.mobileSearchBtn {
+    padding: var(--space-2);
+    background: linear-gradient(135deg, var(--gold), var(--coral));
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    color: white;
+    display: flex;
+}
+
+/* Mobile/Tablet Adjustments for Header Layout */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 var(--space-4);
+    }
+
+    .nav {
+        gap: var(--space-2);
+        /* Tighter gap */
+    }
+
+    .navLink {
+        font-size: 14px;
+    }
+
+    .searchForm {
+        padding: var(--space-2);
+        gap: var(--space-1);
+    }
+
+    .searchInput {
+        width: 80px;
+        font-size: 14px;
+    }
+
+    .logo {
+        font-size: 19px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 8px;
+        /* Reduce container padding to maximize space */
+    }
+
+    .searchInput {
+        width: 50px;
+        /* Reduced further to give space to text */
+    }
+
+    .nav {
+        gap: 6px;
+        /* Very tight gap */
+    }
+
+    .navLink {
+        font-size: 12px;
+        padding: 4px 0;
+    }
+
+    .logo {
+        font-size: 16px;
+        margin-left: 4px;
+    }
+}

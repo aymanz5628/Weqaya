@@ -1,0 +1,114 @@
+/* Animations System - Editorial & Smooth */
+
+:root {
+    --ease-out-editorial: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-in-out-soft: cubic-bezier(0.42, 0, 0.58, 1);
+    --anim-duration-slow: 1.2s;
+    --anim-duration-normal: 0.8s;
+    --anim-duration-fast: 0.4s;
+}
+
+/* 1. Fade Up Effect (Standard Entry) */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+        filter: blur(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+.animate-fade-up {
+    opacity: 0;
+    /* Start hidden */
+    animation-fill-mode: forwards;
+    animation-timing-function: var(--ease-out-editorial);
+    animation-duration: var(--anim-duration-normal);
+}
+
+.in-view .animate-fade-up {
+    animation-name: fadeUp;
+}
+
+/* 2. Text Reveal (Masked Slide) - Great for Headlines */
+@keyframes revealText {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.animate-reveal-wrap {
+    overflow: hidden;
+    /* Mask the text initially */
+    display: block;
+    line-height: 1.2;
+}
+
+.animate-reveal-inner {
+    display: block;
+    transform: translateY(100%);
+    transition: transform var(--anim-duration-slow) var(--ease-out-editorial);
+}
+
+.in-view .animate-reveal-inner {
+    transform: translateY(0);
+}
+
+/* 3. Scale In (For Images - Subtle Zoom) */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-scale-in {
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation-duration: 1.5s;
+}
+
+.in-view .animate-scale-in {
+    animation-name: scaleIn;
+}
+
+/* 4. Stagger Delays (Utility Classes) */
+.delay-100 {
+    animation-delay: 100ms;
+    transition-delay: 100ms;
+}
+
+.delay-200 {
+    animation-delay: 200ms;
+    transition-delay: 200ms;
+}
+
+.delay-300 {
+    animation-delay: 300ms;
+    transition-delay: 300ms;
+}
+
+.delay-400 {
+    animation-delay: 400ms;
+    transition-delay: 400ms;
+}
+
+.delay-500 {
+    animation-delay: 500ms;
+    transition-delay: 500ms;
+}
