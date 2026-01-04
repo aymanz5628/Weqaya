@@ -39,7 +39,7 @@ const formatArticle = (article: any, index: number) => {
     const imageUrl = getStrapiMedia(getImageUrl(attr.image)) || getFallbackImage(index);
     return {
         id: article.id,
-        title: attr.title,
+        title: attr.title || 'بدون عنوان',
         image: imageUrl,
         link: `/articles/${attr.slug}`
     };
@@ -78,12 +78,12 @@ export default async function Home() {
 
             return {
                 id: article.id,
-                slug: attr.slug,
-                title: attr.title,
+                slug: attr.slug || 'article-' + article.id,
+                title: attr.title || 'بدون عنوان',
                 excerpt: attr.description || '',
                 image: imageUrl,
                 category: cat,
-                date: new Date(attr.publishedAt).toLocaleDateString('ar-SA'),
+                date: attr.publishedAt ? new Date(attr.publishedAt).toLocaleDateString('ar-SA') : 'تاريخ غير متوفر',
                 author: { name: 'محرر', avatar: 'https://ui-avatars.com/api/?name=User' }
             };
         });
