@@ -1,19 +1,12 @@
-import { notFound } from 'next/navigation';
-import { fetchAPI, getStrapiMedia } from '@/lib/strapi';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import ArticleHeader from '@/components/article/ArticleHeader';
 import ArticleBody from '@/components/article/ArticleBody';
-import type { Metadata } from 'next';
 
-// CRITICAL: Force dynamic rendering, no caching
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+const STRAPI_URL = 'https://weqaya-376a5d5eac.strapiapp.com';
 
-interface Props {
-  params: { slug: string };
-}
-
-// Helper to extract image URL from various Strapi response formats
 const getImageUrl = (imageField: any): string | null => {
     if (!imageField) return null;
     if (imageField.url) return imageField.url;
@@ -22,78 +15,98 @@ const getImageUrl = (imageField: any): string | null => {
     return null;
 };
 
-async function getArticle(slug: string) {
-  console.log(`[Article] Fetching article with slug: ${slug}`);
-  
-  const data = await fetchAPI('/articles', {
-    filters: { slug: slug },
-    populate: '*', // Populate ALL fields
-  });
-  
-  const article = data?.data?.[0];
-  
-  if (article) {
-    const attr = article.attributes || article;
-    console.log(`[Article] Found: "${attr.title}"`);
-    console.log(`[Article] Content length: ${attr.content?.length || 0} chars`);
-    console.log(`[Article] Content preview: ${attr.content?.substring(0, 100)}...`);
-  } else {
-    console.log(`[Article] Not found for slug: ${slug}`);
-  }
-  
-  return article;
-}
+const getStrapiMedia = (url: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('//')) return url;
+    return `${STRAPI_URL}${url}`;
+};
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await Promise.resolve(params);
-  const articleData = await getArticle(resolvedParams.slug);
-  if (!articleData) return {};
+export default function ArticlePage() {
+    const params = useParams();
+    const slug = params?.slug as string;
+    
+    const [loading, setLoading] = useState(true);
+    const [article, setArticle] = useState<any>(null);
+    const [notFound, setNotFound] = useState(false);
 
-  const article = articleData.attributes || articleData;
-  const imageUrl = getStrapiMedia(getImageUrl(article.image));
+    useEffect(() => {
+        if (!slug) return;
+        
+        const fetchArticle = async () => {
+            try {
+                const res = await fetch(`${STRAPI_URL}/api/articles?filters[slug]=${slug}&populate=*`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const articleData = data?.data?.[0];
+                    if (articleData) {
+                        const attr = articleData.attributes || articleData;
+                        setArticle({
+                            title: attr.title || 'بدون عنوان',
+                            description: attr.description || '',
+                            content: attr.content || '',
+                            publishedAt: attr.publishedAt,
+                            image: getStrapiMedia(getImageUrl(attr.image)),
+                            author: attr.author?.data?.attributes || attr.author || {},
+                            category: attr.category?.data?.attributes || attr.category || {}
+                        });
+                    } else {
+                        setNotFound(true);
+                    }
+                } else {
+                    setNotFound(true);
+                }
+            } catch (error) {
+                console.error('Error fetching article:', error);
+                setNotFound(true);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  return {
-    title: article.title,
-    description: article.description,
-    openGraph: {
-      title: article.title,
-      description: article.description,
-      images: imageUrl ? [imageUrl] : [],
-    },
-  };
-}
+        fetchArticle();
+    }, [slug]);
 
-export default async function ArticlePage({ params }: Props) {
-  const resolvedParams = await Promise.resolve(params);
-  const articleData = await getArticle(resolvedParams.slug);
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '20px' }}>⏳</div>
+                    <p style={{ fontSize: '18px', color: '#666' }}>جاري تحميل المقال...</p>
+                </div>
+            </div>
+        );
+    }
 
-  if (!articleData) {
-    notFound();
-  }
+    if (notFound || !article) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '20px' }}>😕</div>
+                    <h1 style={{ fontSize: '24px', color: '#333' }}>المقال غير موجود</h1>
+                    <p style={{ fontSize: '16px', color: '#666', marginTop: '10px' }}>لم نتمكن من العثور على هذا المقال</p>
+                </div>
+            </div>
+        );
+    }
 
-  const article = articleData.attributes || articleData;
-  const author = article.author?.data?.attributes || article.author || {};
-  const category = article.category?.data?.attributes || article.category || {};
-  const imageUrl = getStrapiMedia(getImageUrl(article.image));
-  const avatarUrl = getStrapiMedia(getImageUrl(author?.avatar));
+    const avatarUrl = getStrapiMedia(getImageUrl(article.author?.avatar));
 
-  return (
-    <article className="min-h-screen bg-white pb-20">
-      <ArticleHeader 
-        title={article.title}
-        excerpt={article.description}
-        category={category?.name || 'عام'}
-        author={{
-          name: author?.name || 'محرر وقاية',
-          avatar: avatarUrl || 'https://ui-avatars.com/api/?name=W'
-        }}
-        date={new Date(article.publishedAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}
-      />
-      
-      <ArticleBody 
-        content={article.content}
-        image={imageUrl || undefined}
-      />
-    </article>
-  );
+    return (
+        <article className="min-h-screen bg-white pb-20">
+            <ArticleHeader 
+                title={article.title}
+                excerpt={article.description}
+                category={article.category?.name || 'عام'}
+                author={{
+                    name: article.author?.name || 'محرر وقاية',
+                    avatar: avatarUrl || 'https://ui-avatars.com/api/?name=W'
+                }}
+                date={article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+            />
+            <ArticleBody 
+                content={article.content}
+                image={article.image || undefined}
+            />
+        </article>
+    );
 }
