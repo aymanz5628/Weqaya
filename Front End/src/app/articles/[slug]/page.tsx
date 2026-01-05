@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import ArticleHeader from '@/components/article/ArticleHeader';
 import ArticleBody from '@/components/article/ArticleBody';
 
-const STRAPI_URL = 'https://weqaya-376a5d5eac.strapiapp.com';
+const STRAPI_URL = 'https://weqaya-backend.onrender.com';
 
 const getImageUrl = (imageField: any): string | null => {
     if (!imageField) return null;

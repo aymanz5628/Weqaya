@@ -8,7 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styles from './page.module.css';
 
-const STRAPI_URL = 'https://weqaya-376a5d5eac.strapiapp.com';
+const STRAPI_URL = 'https://weqaya-backend.onrender.com';
 
 const FALLBACK_IMAGES = [
     "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=600",
