@@ -1,7 +1,7 @@
 import qs from 'qs';
 
 export function getStrapiURL(path = '') {
-  return `https://weqaya-backend.onrender.com${path}`;
+  return `https://active-success-312253e677.strapiapp.com${path}`;
 }
 
 export async function fetchAPI(
