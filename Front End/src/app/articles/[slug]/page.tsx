@@ -34,10 +34,34 @@ export default function ArticlePage() {
         
         const fetchArticle = async () => {
             try {
-                const res = await fetch(`${STRAPI_URL}/api/articles?filters[slug]=${slug}&populate=*`);
+                let url = `${STRAPI_URL}/api/articles?filters[slug]=${slug}&populate=*`;
+                const isIdFallback = slug.startsWith('article-');
+                
+                if (isIdFallback) {
+                    const idPart = slug.split('article-')[1];
+                    // If it looks like an ID, try fetching by ID directly
+                    if (!isNaN(Number(idPart))) {
+                         url = `${STRAPI_URL}/api/articles/${idPart}?populate=*`;
+                    }
+                }
+
+                const res = await fetch(url);
+                
                 if (res.ok) {
                     const data = await res.json();
-                    const articleData = data?.data?.[0];
+                    let articleData = null;
+
+                    // Handle different response structures
+                    if (data.data) {
+                        if (Array.isArray(data.data)) {
+                            // Collection response (from filters)
+                            articleData = data.data[0];
+                        } else {
+                            // Single entry response (from ID lookup)
+                            articleData = data.data;
+                        }
+                    }
+
                     if (articleData) {
                         const attr = articleData.attributes || articleData;
                         setArticle({
@@ -53,6 +77,7 @@ export default function ArticlePage() {
                         setNotFound(true);
                     }
                 } else {
+                    console.error('API Error:', res.status, res.statusText);
                     setNotFound(true);
                 }
             } catch (error) {
@@ -83,7 +108,7 @@ export default function ArticlePage() {
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '48px', marginBottom: '20px' }}>😕</div>
                     <h1 style={{ fontSize: '24px', color: '#333' }}>المقال غير موجود</h1>
-                    <p style={{ fontSize: '16px', color: '#666', marginTop: '10px' }}>لم نتمكن من العثور على هذا المقال</p>
+                    <p style={{ fontSize: '16px', color: '#666', marginTop: '10px' }}>عذراً، لم نتمكن من العثور على المقال المطلوب.</p>
                 </div>
             </div>
         );
