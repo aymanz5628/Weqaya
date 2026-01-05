@@ -1,14 +1,14 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Hero from '@/components/home/Hero';
-import ArticleCard from '@/components/shared/ArticleCard';
 import ParallaxArticleCard from '@/components/shared/ParallaxArticleCard';
 import GallerySection from '@/components/home/GallerySection';
-import { fetchAPI, getStrapiMedia } from '@/lib/strapi';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './page.module.css';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
 
 const FALLBACK_IMAGES = [
     "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=600",
@@ -27,6 +27,12 @@ const getImageUrl = (imageField: any): string | null => {
     return null;
 };
 
+const getStrapiMedia = (url: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('//')) return url;
+    return `${STRAPI_URL}${url}`;
+};
+
 const getCategoryInfo = (catField: any) => {
     if (!catField) return { name: 'عام', slug: 'general' };
     if (catField.name && catField.slug) return { name: catField.name, slug: catField.slug };
@@ -34,196 +40,149 @@ const getCategoryInfo = (catField: any) => {
     return { name: 'عام', slug: 'general' };
 };
 
-const formatArticle = (article: any, index: number) => {
-    const attr = article.attributes || article;
-    const imageUrl = getStrapiMedia(getImageUrl(attr.image)) || getFallbackImage(index);
-    return {
-        id: article.id,
-        title: attr.title || 'بدون عنوان',
-        image: imageUrl,
-        link: `/articles/${attr.slug}`
-    };
-};
-
 const MOCK_PROGRAMS = [
-    { id: 'p1', title: 'السوكياليزم', link: '#' },
-    { id: 'p2', title: 'وعي', link: '#' },
-    { id: 'p3', title: 'ثمانية أسئلة', link: '#' },
-    { id: 'p4', title: 'فنجان', link: '#' },
+    { id: 'p1', title: 'السوكياليزم', link: '#', image: getFallbackImage(15) },
+    { id: 'p2', title: 'وعي', link: '#', image: getFallbackImage(16) },
+    { id: 'p3', title: 'ثمانية أسئلة', link: '#', image: getFallbackImage(17) },
+    { id: 'p4', title: 'فنجان', link: '#', image: getFallbackImage(18) },
 ];
 
 const MOCK_DOCS = [
-    { id: 'd1', title: 'أسرار الكون', link: '#' },
-    { id: 'd2', title: 'الحياة البرية', link: '#' },
-    { id: 'd3', title: 'تاريخنا', link: '#' },
-    { id: 'd4', title: 'علوم المستقبل', link: '#' },
+    { id: 'd1', title: 'أسرار الكون', link: '#', image: getFallbackImage(25) },
+    { id: 'd2', title: 'الحياة البرية', link: '#', image: getFallbackImage(26) },
+    { id: 'd3', title: 'تاريخنا', link: '#', image: getFallbackImage(27) },
+    { id: 'd4', title: 'علوم المستقبل', link: '#', image: getFallbackImage(28) },
 ];
 
-export default async function Home() {
-    let mosaicArticles: any[] = [];
-    try {
-        // Fetch up to 20 articles to have a good pool
-        const articlesRes = await fetchAPI('/articles', {
-            populate: '*',
-            sort: ['publishedAt:desc'],
-            pagination: { limit: 20 }
-        });
+export default function Home() {
+    const [loading, setLoading] = useState(true);
+    const [articles, setArticles] = useState<any[]>([]);
+    const [programs, setPrograms] = useState<any[]>(MOCK_PROGRAMS);
+    const [documentaries, setDocumentaries] = useState<any[]>(MOCK_DOCS);
 
-        const rawArticles = articlesRes.data || [];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const articlesRes = await fetch(`${STRAPI_URL}/api/articles?populate=*&sort=publishedAt:desc&pagination[limit]=20`);
+                if (articlesRes.ok) {
+                    const data = await articlesRes.json();
+                    const rawArticles = data.data || [];
+                    const formattedArticles = rawArticles.map((article: any, index: number) => {
+                        const attr = article.attributes || article;
+                        const cat = getCategoryInfo(attr.category);
+                        const imageUrl = getStrapiMedia(getImageUrl(attr.image)) || getFallbackImage(index);
+                        return {
+                            id: article.id,
+                            slug: attr.slug || 'article-' + article.id,
+                            title: attr.title || 'بدون عنوان',
+                            excerpt: attr.description || '',
+                            image: imageUrl,
+                            category: cat,
+                            date: attr.publishedAt ? new Date(attr.publishedAt).toLocaleDateString('ar-SA') : 'تاريخ غير متوفر',
+                            author: { name: 'محرر', avatar: 'https://ui-avatars.com/api/?name=User' }
+                        };
+                    });
+                    setArticles(formattedArticles);
+                }
 
-        mosaicArticles = rawArticles.map((article: any, index: number) => {
-            const attr = article.attributes || article;
-            const cat = getCategoryInfo(attr.category);
-            const imageUrl = getStrapiMedia(getImageUrl(attr.image)) || getFallbackImage(index);
+                const programsRes = await fetch(`${STRAPI_URL}/api/programs?populate=*&pagination[limit]=4&sort=publishedAt:desc`);
+                if (programsRes.ok) {
+                    const data = await programsRes.json();
+                    const rawPrograms = data.data || [];
+                    if (rawPrograms.length > 0) {
+                        const formattedPrograms = rawPrograms.map((item: any, idx: number) => {
+                            const attr = item.attributes || item;
+                            const imageUrl = getStrapiMedia(getImageUrl(attr.image)) || getFallbackImage(idx + 10);
+                            return { id: item.id, title: attr.title || 'بدون عنوان', image: imageUrl, link: `/articles/${attr.slug || 'program-' + item.id}` };
+                        });
+                        setPrograms(formattedPrograms.length >= 4 ? formattedPrograms : [...formattedPrograms, ...MOCK_PROGRAMS.slice(formattedPrograms.length)]);
+                    }
+                }
 
-            return {
-                id: article.id,
-                slug: attr.slug || 'article-' + article.id,
-                title: attr.title || 'بدون عنوان',
-                excerpt: attr.description || '',
-                image: imageUrl,
-                category: cat,
-                date: attr.publishedAt ? new Date(attr.publishedAt).toLocaleDateString('ar-SA') : 'تاريخ غير متوفر',
-                author: { name: 'محرر', avatar: 'https://ui-avatars.com/api/?name=User' }
-            };
-        });
-    } catch (err) {
-        console.error("Error fetching main articles:", err);
-    }
+                const docsRes = await fetch(`${STRAPI_URL}/api/documentaries?populate=*&pagination[limit]=4&sort=publishedAt:desc`);
+                if (docsRes.ok) {
+                    const data = await docsRes.json();
+                    const rawDocs = data.data || [];
+                    if (rawDocs.length > 0) {
+                        const formattedDocs = rawDocs.map((item: any, idx: number) => {
+                            const attr = item.attributes || item;
+                            const imageUrl = getStrapiMedia(getImageUrl(attr.image)) || getFallbackImage(idx + 20);
+                            return { id: item.id, title: attr.title || 'بدون عنوان', image: imageUrl, link: `/articles/${attr.slug || 'doc-' + item.id}` };
+                        });
+                        setDocumentaries(formattedDocs.length >= 4 ? formattedDocs : [...formattedDocs, ...MOCK_DOCS.slice(formattedDocs.length)]);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
-    // Fetch Programs
-    let programs: any[] = [];
-    try {
-        const res = await fetchAPI('/programs', {
-            populate: '*',
-            pagination: { limit: 4 },
-            sort: ['publishedAt:desc']
-        });
-        programs = (res.data || []).map((item: any, idx: number) => formatArticle(item, idx + 10));
-    } catch (err) { }
-    if (programs.length < 4) {
-        const needed = 4 - programs.length;
-        const extras = MOCK_PROGRAMS.slice(0, needed).map((item, idx) => ({ ...item, id: `mock-p-${idx}`, image: getFallbackImage(idx + 15) }));
-        programs = [...programs, ...extras];
-    }
-
-    // Fetch Documentaries
-    let documentaries: any[] = [];
-    try {
-        const res = await fetchAPI('/documentaries', {
-            populate: '*',
-            pagination: { limit: 4 },
-            sort: ['publishedAt:desc']
-        });
-        documentaries = (res.data || []).map((item: any, idx: number) => formatArticle(item, idx + 20));
-    } catch (err) { }
-    if (documentaries.length < 4) {
-        const needed = 4 - documentaries.length;
-        const extras = MOCK_DOCS.slice(0, needed).map((item, idx) => ({ ...item, id: `mock-d-${idx}`, image: getFallbackImage(idx + 25) }));
-        documentaries = [...documentaries, ...extras];
-    }
-
-    // --- SMART CONTENT DISTRIBUTION ---
-
-    // 1. Hero: Always single article (the latest one)
-    const heroArticles = mosaicArticles.slice(0, 1);
-
-    // Helper to recycle content securely with unique IDs
     const fillWithReal = (target: any[], sourceDetails: any[], count: number, suffix: string) => {
         let filled = [...target];
         if (filled.length >= count) return filled.slice(0, count);
-
-        // If we have nothing to recycle, we can't help
         if (sourceDetails.length === 0) return filled;
-
         let i = 0;
-        // Try not to repeat immediately if possible, but fallback to repeating
-        // We cycle through sourceDetails
         while (filled.length < count) {
             const original = sourceDetails[i % sourceDetails.length];
-            // Only add if not already in list (by original ID check)? 
-            // Actually user wants content, duplicates are better than broken mocks.
-            // We append a suffix to ID to ensure React keys work
             filled.push({ ...original, id: `${original.id}-${suffix}-${filled.length}` });
             i++;
         }
         return filled;
     };
 
-    // 2. Latest Topics: Needs 4
-    // Ideally use articles [1..4]
-    let latestTopics = mosaicArticles.slice(1, 5);
-    // Fill if missing using ALL available articles (including hero one if desperate)
-    latestTopics = fillWithReal(latestTopics, mosaicArticles, 4, 'latest');
-
-    // 3. Most Viewed: Needs 4
-    // Ideally use articles [5..9], fallback to whatever we have
-    // We reverse the source pool to mock "different" content order if we are recycling
-    let mostViewed = mosaicArticles.slice(5, 9);
-    const reversePool = [...mosaicArticles].reverse();
-    mostViewed = fillWithReal(mostViewed, reversePool, 4, 'popular');
-
-
-    // Fallback Mock Logic (Only runs if we have literally 0 articles from backend)
     const fillMock = (current: any[], count: number, offset: number) => {
         if (current.length >= count) return current;
         const needed = count - current.length;
         return [...current, ...Array(needed).fill(null).map((_, i) => ({
-            id: `mock-feed-${offset + i}`,
-            title: 'عنوان تجريبي للمقال',
-            excerpt: 'نبذة مختصرة عن المقال...',
-            slug: 'sample-article', // This might be a dead link, but better than crash
-            image: getFallbackImage(offset + i),
-            category: { name: 'تصنيف', slug: 'category' },
-            author: { name: 'محرر', avatar: '' },
-            date: '2025/01/01'
+            id: `mock-feed-${offset + i}`, title: 'عنوان تجريبي للمقال', excerpt: 'نبذة مختصرة عن المقال...',
+            slug: 'sample-article', image: getFallbackImage(offset + i), category: { name: 'تصنيف', slug: 'category' },
+            author: { name: 'محرر', avatar: '' }, date: '2025/01/01'
         }))];
     };
 
+    const heroArticles = articles.slice(0, 1);
+    let latestTopics = fillWithReal(articles.slice(1, 5), articles, 4, 'latest');
+    let mostViewed = fillWithReal(articles.slice(5, 9), [...articles].reverse(), 4, 'popular');
     const finalLatest = fillMock(latestTopics, 4, 30);
     const finalMostViewed = fillMock(mostViewed, 4, 40);
 
+    if (loading) {
+        return (
+            <main className={styles.main}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '20px' }}>⏳</div>
+                        <p style={{ fontSize: '18px', color: '#666' }}>جاري تحميل المحتوى...</p>
+                    </div>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className={styles.main}>
-            {/* Hero now handles single article correctly internally based on updated Hero.tsx */}
             <div className={styles.heroSection}><Hero articles={heroArticles} /></div>
-
-            {/* أحدث المواضيع - Parallax Cards Section */}
             <section className={styles.parallaxSection}>
                 <div className="container">
-                    <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>أحدث المواضيع</h2>
-                        {/* Link Removed */}
-                    </div>
+                    <div className={styles.sectionHeader}><h2 className={styles.sectionTitle}>أحدث المواضيع</h2></div>
                     <div className={styles.parallaxGrid}>
-                        {finalLatest.map((article: any) => (
-                            <div key={article.id} className={styles.parallaxCardWrapper}>
-                                <ParallaxArticleCard {...article} />
-                            </div>
-                        ))}
+                        {finalLatest.map((article: any) => (<div key={article.id} className={styles.parallaxCardWrapper}><ParallaxArticleCard {...article} /></div>))}
                     </div>
                 </div>
             </section>
-
-            {/* الأكثر مشاهدة - Parallax Cards Section */}
             <section className={styles.parallaxSection}>
                 <div className="container">
-                    <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>الأكثر مشاهدة</h2>
-                        {/* Link Removed */}
-                    </div>
+                    <div className={styles.sectionHeader}><h2 className={styles.sectionTitle}>الأكثر مشاهدة</h2></div>
                     <div className={styles.parallaxGrid}>
-                        {finalMostViewed.map((article: any) => (
-                            <div key={article.id} className={styles.parallaxCardWrapper}>
-                                <ParallaxArticleCard {...article} />
-                            </div>
-                        ))}
+                        {finalMostViewed.map((article: any) => (<div key={article.id} className={styles.parallaxCardWrapper}><ParallaxArticleCard {...article} /></div>))}
                     </div>
                 </div>
             </section>
-
             <GallerySection />
-
             <section id="programs" className={styles.seriesSection}>
                 <div className="container">
                     <div className={styles.seriesHeader}><h2 className={styles.seriesTitle}>البرامج</h2></div>
@@ -238,7 +197,6 @@ export default async function Home() {
                     </div>
                 </div>
             </section>
-
             <section id="documentaries" className={styles.seriesSection}>
                 <div className="container">
                     <div className={styles.seriesHeader}><h2 className={styles.seriesTitle}>الوثائقيات</h2></div>
