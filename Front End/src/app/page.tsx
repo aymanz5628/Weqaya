@@ -8,7 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styles from './page.module.css';
 
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
+const STRAPI_URL = 'https://weqaya-376a5d5eac.strapiapp.com';
 
 const FALLBACK_IMAGES = [
     "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=600",
