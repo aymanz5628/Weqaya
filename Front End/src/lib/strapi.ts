@@ -1,7 +1,7 @@
 import qs from 'qs';
 
 export function getStrapiURL(path = '') {
-  return `${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337'}${path}`;
+  return `https://weqaya-376a5d5eac.strapiapp.com${path}`;
 }
 
 export async function fetchAPI(
@@ -11,7 +11,7 @@ export async function fetchAPI(
 ) {
   const mergedOptions: RequestInit = {
     headers: { 'Content-Type': 'application/json' },
-    cache: 'no-store', // CRITICAL: Never cache
+    cache: 'no-store',
     ...options,
   };
 
